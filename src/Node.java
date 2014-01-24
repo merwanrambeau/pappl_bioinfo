@@ -6,7 +6,8 @@ public class Node {
 	protected String feature;
 	protected String location;
 	protected String nodeId;
-	
+	protected String name;
+	protected String type;
 	
 
 	public Node(String pId, String entId, String nId, int patId){
@@ -14,6 +15,15 @@ public class Node {
 		entityId=entId;
 		nodeId= nId;
 		pathwaydbId=patId;
+	}
+	
+	public Node(String pId, String entId, String nId, int patId, String nam, String typ){
+		participantId = pId;
+		entityId=entId;
+		nodeId= nId;
+		pathwaydbId=patId;
+		name = nam;
+		type = typ;
 	}
 
 	public Node(){}
