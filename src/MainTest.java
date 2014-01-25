@@ -3,6 +3,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.jgrapht.graph.DirectedPseudograph;
 import org.jgrapht.graph.SimpleDirectedGraph;
 
 public class MainTest {
@@ -31,13 +32,13 @@ public class MainTest {
 					+ "FROM reformatted_entity_particpant "
 					+ "JOIN reformatted_abstract_node ON reformatted_abstract_node.participantId=reformatted_entity_particpant.participantId "
 					+ "JOIN reformatted_entity_information ON reformatted_entity_information.entityId = reformatted_entity_particpant.entityId"
-					+ " WHERE reformatted_abstract_node.pathwayDbId='2' AND reformatted_entity_particpant.pathwaydbId='2';");
-			SimpleDirectedGraph<Node,Edge> graph = new SimpleDirectedGraph<Node,Edge>(Edge.class);
+					+ " WHERE reformatted_abstract_node.pathwayDbId='3' AND reformatted_entity_particpant.pathwaydbId='3';");
+			DirectedPseudograph<Node,Edge> graph = new DirectedPseudograph<Node,Edge>(Edge.class);
 			while (rs.next()) {
 				Node n = new Node(rs.getString(1), rs.getString(2),rs.getString(3),rs.getInt(4), rs.getString(5), rs.getString(6));
 				graph.addVertex(n);
 			}
-			rs = stmt.executeQuery("SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='2';");
+			rs = stmt.executeQuery("SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='3';");
 			while (rs.next()){
 				Set<Node> nodes = new HashSet<Node>();
 				nodes = graph.vertexSet();
@@ -58,6 +59,10 @@ public class MainTest {
 				}
 				if(nodeA.getNodeID()==null || nodeB.getNodeID()==null){
 					System.out.println("noeud non trouve");
+					System.out.println("pathwayId : " + rs.getString("pathwayId"));
+					System.out.println("interactionId : " + rs.getString("interactionId"));
+					System.out.println("interactiontype : " + rs.getString("interactionType"));
+					System.out.println("controller : " + rs.getString("Controller"));
 				}
 				else{
 					System.out.println("TROUVE");
