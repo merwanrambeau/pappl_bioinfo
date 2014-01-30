@@ -44,9 +44,11 @@ public class MainTest {
 				nodes = graph.vertexSet();
 				String nodeAId = rs.getString("nodeA");
 				String nodeBId = rs.getString("nodeB");
+				String controllerId = rs.getString("controller");
 				System.out.println(nodeAId+ " " + nodeBId);
 				Node nodeA=new Node();
 				Node nodeB=new Node();
+				Node controller=new Node();
 				Iterator<Node> it = nodes.iterator();
 				while(it.hasNext()){
 					Node n = (Node)it.next();
@@ -56,16 +58,17 @@ public class MainTest {
 					if(n.getNodeID().equals(nodeBId)){
 						nodeB=n;
 					}
+					if(n.getNodeID().equals(controllerId)){
+						controller=n;
+					}
 				}
-				if(nodeA.getNodeID()==null || nodeB.getNodeID()==null){
-					System.out.println("noeud non trouve");
-					System.out.println("pathwayId : " + rs.getString("pathwayId"));
-					System.out.println("interactionId : " + rs.getString("interactionId"));
-					System.out.println("interactiontype : " + rs.getString("interactionType"));
-					System.out.println("controller : " + rs.getString("Controller"));
+				if(nodeA.getNodeID()==null && nodeB.getNodeID()!=null && controller.getNodeID()!=null){ //if there is no nodeA, the edge comes from controller to nodeB
+					Edge e = new Edge(rs.getInt("pathwayDbId"), rs.getString("pathwayId"), rs.getString("interactionId"),rs.getString("interactionType"),controller,nodeB);
 				}
-				else{
-					System.out.println("TROUVE");
+				else if(nodeB.getNodeID()==null && nodeA.getNodeID()!=null && controller.getNodeID()!=null){ //if there is no nodeB but a nodeA and a controller, edge from controller to nodeA
+					Edge e = new Edge(rs.getInt("pathwayDbId"), rs.getString("pathwayId"), rs.getString("interactionId"),rs.getString("interactionType"),controller,nodeA);
+				}
+				else if (nodeA.getNodeID()!=null && nodeB.getNodeID()!=null){//normal edge from nodeA to nodeB
 					Edge e = new Edge(rs.getInt("pathwayDbId"), rs.getString("pathwayId"), rs.getString("interactionId"),rs.getString("interactionType"),nodeA,nodeB);
 					graph.addEdge(nodeA, nodeB, e);
 				}
