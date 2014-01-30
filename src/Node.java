@@ -1,4 +1,3 @@
-
 public class Node {
 	protected String participantId;
 	protected String entityId;
