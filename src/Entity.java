@@ -3,6 +3,12 @@ public class Entity extends Node {
 	
 	protected ComplexNode complex;
 	
+	public Entity(String entId, int patId, ComplexNode n){
+		entityId=entId;
+		pathwaydbId=patId;
+		complex=n;
+	}
+	
 	public Entity(String pId, String entId, String nId, int patId){
 		super(pId, entId, nId, patId);
 	}
