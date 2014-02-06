@@ -1,4 +1,5 @@
-public class Node {
+public class Node 
+{
 	protected String participantId;
 	protected String entityId;
 	protected int pathwaydbId;
@@ -9,7 +10,8 @@ public class Node {
 	protected String type;
 	
 
-	public Node(String pId, String entId, String nId, int patId){
+	public Node(String pId, String entId, String nId, int patId)
+	{
 		participantId = pId;
 		entityId=entId;
 		nodeId= nId;

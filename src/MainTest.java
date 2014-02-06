@@ -26,7 +26,7 @@ public class MainTest {
 		
 		String dbURL="jdbc:mysql://localhost:3306/hipathdb_reformatted_20100309";
 		try {
-			Connection con=DriverManager.getConnection(dbURL,"root","papplsql");
+			Connection con=DriverManager.getConnection(dbURL,"merwan","Iwasbornthe7");
 			
 			Statement stmt = con.createStatement();
 			//get all the "normal" nodes
@@ -93,7 +93,9 @@ public class MainTest {
 			Statement stmt2 = con.createStatement();
 			ResultSet rs2 = stmt2.executeQuery("SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='2';");
 			System.out.println("nb lignes resultats relations : "+rs2.getRow());
+			int countRow = 0;
 			while (rs2.next()){
+				countRow = rs2.getRow();
 				Set<Node> nodes = new HashSet<Node>();
 				nodes = graph.vertexSet();
 				String nodeAId = rs2.getString("nodeA");
@@ -143,6 +145,9 @@ public class MainTest {
 			con.close();
 			Driver theDriver=DriverManager.getDriver(dbURL);
 			DriverManager.deregisterDriver(theDriver);
+			
+			CytoscapeWritingTest writingTest = new CytoscapeWritingTest();
+			writingTest.test(graph);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

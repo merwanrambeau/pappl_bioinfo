@@ -1,5 +1,5 @@
-
-public class Edge {
+public class Edge 
+{
 	protected int pathwaydbId;
 	protected String pathwayId;
 	protected String interactionId;

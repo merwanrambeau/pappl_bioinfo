@@ -1,5 +1,6 @@
 
-public class Entity extends Node {
+public class Entity extends Node 
+{
 	
 	protected ComplexNode complex;
 	
