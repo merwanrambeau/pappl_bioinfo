@@ -90,9 +90,10 @@ public class MainTest {
 				graph.addVertex(n);
 			}
 			stmt_spe.close();		
+			
 			Statement stmt2 = con.createStatement();
-			ResultSet rs2 = stmt2.executeQuery("SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='2';");
-			System.out.println("nb lignes resultats relations : "+rs2.getRow());
+			String query = "SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='2';";
+			ResultSet rs2 = stmt2.executeQuery(query);
 			while (rs2.next()){
 				Set<Node> nodes = new HashSet<Node>();
 				nodes = graph.vertexSet();
@@ -106,36 +107,38 @@ public class MainTest {
 				Iterator<Node> it = nodes.iterator();
 				while(it.hasNext()){
 					Node n = (Node)it.next();
-					if(n.getNodeID().equals(nodeAId)){
-						nodeA=n;
+					if(n.getNodeID()!=null){ //subentities have no nodeid, so we have to check first if there is one nodeId to prevent crash
+						if(n.getNodeID().equals(nodeAId)){
+							nodeA=n;
+						}
+						if(n.getNodeID().equals(nodeBId)){
+							nodeB=n;
+						}
+						if(n.getNodeID().equals(controllerId)){
+							controller=n;
+						}
+						if(nodeA.getNodeID()==null && nodeB.getNodeID()!=null && controller.getNodeID()!=null){ //if there is no nodeA, the edge comes from controller to nodeB
+								Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeB);
+								graph.addEdge(controller, nodeB, e);
+								System.out.println("created edge without nodeA");
+						}
+						else if(nodeB.getNodeID()==null && nodeA.getNodeID()!=null && controller.getNodeID()!=null){ //if there is no nodeB but a nodeA and a controller, edge from controller to nodeA
+							Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeA);
+							graph.addEdge(controller, nodeA, e);
+							System.out.println("created edge without nodeB");
+						}
+						else if (nodeA.getNodeID()!=null && nodeB.getNodeID()!=null){//normal edge from nodeA to nodeB
+							Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),nodeA,nodeB);
+							graph.addEdge(nodeA, nodeB, e);
+							System.out.println("created normal edge");
+						}
+						else{
+							System.out.println("created NO EDGE");
+							System.out.println("controller : "+controllerId);
+						}
 					}
-					if(n.getNodeID().equals(nodeBId)){
-						nodeB=n;
-					}
-					if(n.getNodeID().equals(controllerId)){
-						controller=n;
-					}
-				}
-				if(nodeA.getNodeID()==null && nodeB.getNodeID()!=null && controller.getNodeID()!=null){ //if there is no nodeA, the edge comes from controller to nodeB
-					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeB);
-					graph.addEdge(controller, nodeB, e);
-					System.out.println("created edge without nodeA");
-				}
-				else if(nodeB.getNodeID()==null && nodeA.getNodeID()!=null && controller.getNodeID()!=null){ //if there is no nodeB but a nodeA and a controller, edge from controller to nodeA
-					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeA);
-					graph.addEdge(controller, nodeA, e);
-					System.out.println("created edge without nodeB");
-				}
-				else if (nodeA.getNodeID()!=null && nodeB.getNodeID()!=null){//normal edge from nodeA to nodeB
-					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),nodeA,nodeB);
-					graph.addEdge(nodeA, nodeB, e);
-					System.out.println("created normal edge");
-				}
-				else{
-					System.out.println("created NO EDGE");
-					System.out.println("controller : "+controllerId);
-				}
 				
+				}
 			}
 			stmt2.close();
 			
