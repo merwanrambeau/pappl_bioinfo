@@ -91,10 +91,12 @@ public class MainTest {
 				graph.addVertex(n);
 			}
 			stmt_spe.close();		
+			
 			Statement stmt2 = con.createStatement();
-			ResultSet rs2 = stmt2.executeQuery("SELECT * FROM reformatted_pathway_relationPair");// WHERE pathwayDbId='2';");
-			System.out.println("nb lignes resultats relations : "+rs2.getRow());
+
 			int countRow = 0;
+			String query = "SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='2';";
+			ResultSet rs2 = stmt2.executeQuery(query);
 			while (rs2.next()){
 				countRow = rs2.getRow();
 				Set<Node> nodes = new HashSet<Node>();
@@ -109,14 +111,16 @@ public class MainTest {
 				Iterator<Node> it = nodes.iterator();
 				while(it.hasNext()){
 					Node n = (Node)it.next();
-					if(n.getNodeID().equals(nodeAId)){
-						nodeA=n;
-					}
-					if(n.getNodeID().equals(nodeBId)){
-						nodeB=n;
-					}
-					if(n.getNodeID().equals(controllerId)){
-						controller=n;
+					if(n.getNodeID()!=null){ //subentities have no nodeid, so we have to check first if there is one nodeId to prevent crash
+						if(n.getNodeID().equals(nodeAId)){
+							nodeA=n;
+						}
+						if(n.getNodeID().equals(nodeBId)){
+							nodeB=n;
+						}
+						if(n.getNodeID().equals(controllerId)){
+							controller=n;
+						}
 					}
 				}
 				if(nodeA.getNodeID()==null && nodeB.getNodeID()!=null && controller.getNodeID()!=null){ //if there is no nodeA, the edge comes from controller to nodeB
@@ -141,7 +145,6 @@ public class MainTest {
 					System.out.println("created NO EDGE");
 					System.out.println("controller : "+controllerId);
 				}
-				
 			}
 			stmt2.close();
 			
