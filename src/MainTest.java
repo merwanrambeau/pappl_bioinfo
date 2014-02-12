@@ -13,6 +13,7 @@ public class MainTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		int edgesCreated = 0;
 		try
 		{
 		Class.forName("com.mysql.jdbc.Driver");
@@ -91,7 +92,7 @@ public class MainTest {
 			}
 			stmt_spe.close();		
 			Statement stmt2 = con.createStatement();
-			ResultSet rs2 = stmt2.executeQuery("SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='2';");
+			ResultSet rs2 = stmt2.executeQuery("SELECT * FROM reformatted_pathway_relationPair");// WHERE pathwayDbId='2';");
 			System.out.println("nb lignes resultats relations : "+rs2.getRow());
 			int countRow = 0;
 			while (rs2.next()){
@@ -122,16 +123,19 @@ public class MainTest {
 					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeB);
 					graph.addEdge(controller, nodeB, e);
 					System.out.println("created edge without nodeA");
+					edgesCreated++;
 				}
 				else if(nodeB.getNodeID()==null && nodeA.getNodeID()!=null && controller.getNodeID()!=null){ //if there is no nodeB but a nodeA and a controller, edge from controller to nodeA
 					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeA);
 					graph.addEdge(controller, nodeA, e);
 					System.out.println("created edge without nodeB");
+					edgesCreated++;
 				}
 				else if (nodeA.getNodeID()!=null && nodeB.getNodeID()!=null){//normal edge from nodeA to nodeB
 					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),nodeA,nodeB);
 					graph.addEdge(nodeA, nodeB, e);
 					System.out.println("created normal edge");
+					edgesCreated++;
 				}
 				else{
 					System.out.println("created NO EDGE");
@@ -145,7 +149,7 @@ public class MainTest {
 			con.close();
 			Driver theDriver=DriverManager.getDriver(dbURL);
 			DriverManager.deregisterDriver(theDriver);
-			
+			System.out.println(edgesCreated + " edges created");
 			CytoscapeWritingTest writingTest = new CytoscapeWritingTest();
 			writingTest.test(graph);
 		} catch (SQLException e) {
