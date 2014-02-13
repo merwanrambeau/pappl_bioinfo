@@ -27,30 +27,70 @@ public class MainTest {
 		String dbURL="jdbc:mysql://localhost:3306/hipathdb_reformatted_20100309";
 		try {
 			Connection con=DriverManager.getConnection(dbURL,"root","papplsql");
-			
+			int databaseId = 4;
 			Statement stmt = con.createStatement();
+			
+			
 			//get all the "normal" nodes
 			ResultSet rs = stmt.executeQuery("SELECT reformatted_entity_particpant.participantId, reformatted_entity_particpant.entityId, reformatted_abstract_node.superNodeId, reformatted_entity_particpant.pathwaydbId, reformatted_entity_information.entityType, reformatted_entity_information.entityName "
 					+ "FROM reformatted_entity_particpant "
 					+ "JOIN reformatted_abstract_node ON reformatted_abstract_node.participantId=reformatted_entity_particpant.participantId "
 					+ "JOIN reformatted_entity_information ON reformatted_entity_information.entityId = reformatted_entity_particpant.entityId "
-					+ "WHERE reformatted_abstract_node.pathwayDbId='2' AND reformatted_entity_particpant.pathwaydbId='2';");
+					+ "WHERE reformatted_abstract_node.pathwayDbId='"+databaseId+"' AND reformatted_entity_particpant.pathwaydbId='"+databaseId+"' ORDER BY supernodeId;");
 			DirectedPseudograph<Node,Edge> graph = new DirectedPseudograph<Node,Edge>(Edge.class);
 			while (rs.next()) {
 				Node n;
+				SuperNode s=new SuperNode(rs.getString("superNodeId")+"false");
+				
 				if(rs.getString("entityType").equals("complex")){
 					n = new ComplexNode(rs.getString("participantId"), rs.getString("entityId"), rs.getString("supernodeId"), rs.getInt("pathwayDbId"),rs.getString("entityName"), rs.getString("entityType"));
-					System.out.println("1. created complex "+n.getNodeID());
+					System.out.println("1. created complex (name) "+n.getName());
 					ArrayList<Entity> sub_entities = ((ComplexNode)n).createSubEntities(con);
-					for (Entity e : sub_entities) {
-						graph.addVertex(e);
-					}
+					
 				}
 				else{
-					n = new Entity(rs.getString(1), rs.getString(2),rs.getString(3),rs.getInt(4), rs.getString(5), rs.getString(6));
-					System.out.println("1. created entity "+n.getNodeID());
+					n = new Entity(rs.getString("participantId"), rs.getString("entityId"),rs.getString("superNodeId"),rs.getInt("pathwaydbId"), rs.getString("entityName"), rs.getString("entityType"));
+					System.out.println("1. created entity (name) "+n.getName());
 				}
-				graph.addVertex(n);
+				//special for BDD 4 : we have to manage entity linked to several superNode which appear several times in teh SQL answer
+				if(rs.getInt("pathwaydbId")==4 && rs.getString("superNodeId").startsWith("C")){
+					//if it is a different superNode, create it and store it in s (superNodes do not appear directly as lines in the answer)
+					if(!s.getNodeID().equals(rs.getString("superNodeId"))){
+						s = new SuperNode(rs.getString("superNodeId"));
+						graph.addVertex(s);
+					}
+
+				}
+				//We browse the graph to check if the node is not already in the graph 
+				//(We cannot  use the containsVertex method of the graph because it does not behave as explained in the doc)
+				Set<Node> nodes = new HashSet<Node>();
+				nodes = graph.vertexSet();
+				boolean trouve = false;
+				Iterator<Node> it = nodes.iterator();
+				Node node=new Node();
+				while(it.hasNext() && !trouve){
+					node = (Node)it.next();
+					if(node.equals(n)){
+						trouve=true;
+					}
+				}
+				//if the node is already in the graph, we don't add it, but for base 4 we add the already existant one to the supernode
+				if(trouve){
+					System.out.println("Node already in the graph : (id) "+n.getEntityId()+" (name) "+n.getName());
+					if(rs.getInt("pathwaydbId")==4 && rs.getString("superNodeId").startsWith("C")){
+						s.addSubNode(node);
+					}
+				}
+				//if the node is not in the graph, we add it and its sub entities if it is a complex
+				else{
+					graph.addVertex(n);
+					if(n.getType().equals("complex")){
+						ArrayList<Entity> sub_entities = ((ComplexNode)n).getSub_entities();
+						for (Entity e : sub_entities) {
+							graph.addVertex(e);
+						}
+					}
+				}
 				
 			}
 			stmt.close();
@@ -58,9 +98,9 @@ public class MainTest {
 			ResultSet rs_spe;
 			//get all special nodes (which do not appear in the "entity_particpant" table)
 			rs_spe = stmt_spe.executeQuery("SELECT * FROM reformatted_abstract_node"
-					+" WHERE reformatted_abstract_node.pathwayDbId='2' "
+					+" WHERE reformatted_abstract_node.pathwayDbId='"+databaseId+"' "
 					+"AND reformatted_abstract_node.participantId NOT IN "
-					+"(SELECT participantId FROM reformatted_entity_particpant WHERE pathwayDbId='2');");
+					+"(SELECT participantId FROM reformatted_entity_particpant WHERE pathwayDbId='"+databaseId+"');");
 
 			while (rs_spe.next()){
 				Node n;
@@ -76,7 +116,7 @@ public class MainTest {
 					else{
 						n = new ComplexNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"));
 					}
-					System.out.println("created complex "+n.getNodeID());
+					System.out.println("created complex(name) "+n.getName());
 					ArrayList<Entity> sub_entities = ((ComplexNode)n).createSubEntities(con);
 					for (Entity e : sub_entities) {
 						graph.addVertex(e);
@@ -85,14 +125,15 @@ public class MainTest {
 				}
 				else{
 					n = new SpecialNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"));
-					System.out.println("created special node "+n.getNodeID());
+					n.setName(rs_spe.getString("participantId"));
+					System.out.println("created special node (name) "+n.getName());
 				}
 				graph.addVertex(n);
 			}
 			stmt_spe.close();		
 			
 			Statement stmt2 = con.createStatement();
-			String query = "SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='2';";
+			String query = "SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='"+databaseId+"';";
 			ResultSet rs2 = stmt2.executeQuery(query);
 			while (rs2.next()){
 				Set<Node> nodes = new HashSet<Node>();

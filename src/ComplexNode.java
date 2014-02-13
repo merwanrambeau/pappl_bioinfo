@@ -80,16 +80,16 @@ public class ComplexNode extends Node {
 					n.setName(r.getString("entityName"));
 					}
 					sub_entities.add(n);
-					System.out.println("sub_entity "+n.getEntityId()+" added.");
+					System.out.println("sub_entity(name) "+n.getName()+" added.");
 					stmt2.close();
 				}
 			}
 			else{ //DB4
 				rs=stmt.executeQuery("SELECT DISTINCT(reformatted_entity_particpant.entityId) as subentity_id, reformatted_entity_information.*, reformatted_entity_particpant.location, reformatted_entity_particpant.feature " 
 						+"FROM reformatted_sub_entity, reformatted_entity_particpant, reformatted_entity_information "
-						+ "WHERE reformatted_sub_entity.entityId="+entityId
-						+"AND reformatted_entity_particpant.participantId=reformatted_sub_entity.subcomponentId "
-						+"AND reformatted_entity_information.entityId=reformatted_entity_particpant.entityId)");
+						+ "WHERE reformatted_sub_entity.entityId='"+entityId
+						+"' AND reformatted_entity_particpant.participantId=reformatted_sub_entity.subcomponentId "
+						+"AND reformatted_entity_information.entityId=reformatted_entity_particpant.entityId");
 				while(rs.next()){
 					Entity n = new Entity(rs.getString("subentity_id"), pathwaydbId, this);
 					n.setType(rs.getString("entityType"));
