@@ -16,89 +16,118 @@ public class MainTest {
 		int edgesCreated = 0;
 		try
 		{
-		Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("com.mysql.jdbc.Driver");
 		}
 		catch
 		(java.lang.ClassNotFoundException e)
 		{
-		System.err.print("ClassNotFoundException:");
-		System.err.println(e.getMessage());
+			System.err.print("ClassNotFoundException:");
+			System.err.println(e.getMessage());
 		}
-		
+
 		String dbURL="jdbc:mysql://localhost:3306/hipathdb_reformatted_20100309";
-		try {
+
+		try 
+		{
 			Connection con=DriverManager.getConnection(dbURL,"merwan","Iwasbornthe7");
-			
 			Statement stmt = con.createStatement();
-			//get all the "normal" nodes
+
+			///////////////////////////////////////////////////////////////////////////////////////
+			//          get all the "normal" nodes
+			///////////////////////////////////////////////////////////////////////////////////////
+			
 			ResultSet rs = stmt.executeQuery("SELECT reformatted_entity_particpant.participantId, reformatted_entity_particpant.entityId, reformatted_abstract_node.superNodeId, reformatted_entity_particpant.pathwaydbId, reformatted_entity_information.entityType, reformatted_entity_information.entityName "
-					+ "FROM reformatted_entity_particpant "
-					+ "JOIN reformatted_abstract_node ON reformatted_abstract_node.participantId=reformatted_entity_particpant.participantId "
-					+ "JOIN reformatted_entity_information ON reformatted_entity_information.entityId = reformatted_entity_particpant.entityId "
-					+ "WHERE reformatted_abstract_node.pathwayDbId='2' AND reformatted_entity_particpant.pathwaydbId='2';");
+                                        + "FROM reformatted_entity_particpant "
+                                        + "JOIN reformatted_abstract_node ON reformatted_abstract_node.participantId=reformatted_entity_particpant.participantId "
+                                        + "JOIN reformatted_entity_information ON reformatted_entity_information.entityId = reformatted_entity_particpant.entityId "
+                                        + "WHERE reformatted_abstract_node.pathwayDbId='2' AND reformatted_entity_particpant.pathwaydbId='2' ORDER BY supernodeId;");
+			
+
 			DirectedPseudograph<Node,Edge> graph = new DirectedPseudograph<Node,Edge>(Edge.class);
-			while (rs.next()) {
+
+			while (rs.next()) 
+			{
 				Node n;
-				if(rs.getString("entityType").equals("complex")){
+
+				if(rs.getString("entityType").equals("complex"))
+				{
 					n = new ComplexNode(rs.getString("participantId"), rs.getString("entityId"), rs.getString("supernodeId"), rs.getInt("pathwayDbId"),rs.getString("entityName"), rs.getString("entityType"));
 					System.out.println("1. created complex "+n.getNodeID());
 					ArrayList<Entity> sub_entities = ((ComplexNode)n).createSubEntities(con);
-					for (Entity e : sub_entities) {
+
+					for (Entity e : sub_entities) 
+					{
 						graph.addVertex(e);
 					}
 				}
-				else{
+				else
+				{
 					n = new Entity(rs.getString(1), rs.getString(2),rs.getString(3),rs.getInt(4), rs.getString(5), rs.getString(6));
 					System.out.println("1. created entity "+n.getNodeID());
 				}
+
 				graph.addVertex(n);
-				
+				System.out.println("sisi ça sarrete : "+n.name);
+
 			}
-			stmt.close();
+
+			stmt.close(); 
+
+			///////////////////////////////////////////////////////////////////////////////////////
+			//          get all special nodes (which do not appear in the "entity_particpant" table)
+			///////////////////////////////////////////////////////////////////////////////////////
+
 			Statement stmt_spe = con.createStatement();
 			ResultSet rs_spe;
-			//get all special nodes (which do not appear in the "entity_particpant" table)
 			rs_spe = stmt_spe.executeQuery("SELECT * FROM reformatted_abstract_node"
 					+" WHERE reformatted_abstract_node.pathwayDbId='2' "
 					+"AND reformatted_abstract_node.participantId NOT IN "
 					+"(SELECT participantId FROM reformatted_entity_particpant WHERE pathwayDbId='2');");
 
-			while (rs_spe.next()){
+			while (rs_spe.next())
+			{
 				Node n;
-				if(rs_spe.getInt("reformatted_abstract_node.pathwayDbId")==1){
+
+				if(rs_spe.getInt("reformatted_abstract_node.pathwayDbId")==1)
+				{
 					//special nodes in DB1 are complex which have information associated to them in the entity_information table
+
 					Statement stmt_compl=con.createStatement();
 					String requete = "SELECT * FROM reformatted_entity_information WHERE entityId='"+rs_spe.getString("participantId")+"' AND pathwayDbId='1'";
 					ResultSet rs_compl=stmt_compl.executeQuery(requete);
 					System.out.println(requete);
-					if(rs_compl.next()){
+					if(rs_compl.next())
+					{
 						n = new ComplexNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"),	rs_compl.getString("entityName"),rs_compl.getString("entityType"));
 					}
-					else{
+					else
+					{
 						n = new ComplexNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"));
 					}
 					System.out.println("created complex "+n.getNodeID());
 					ArrayList<Entity> sub_entities = ((ComplexNode)n).createSubEntities(con);
-					for (Entity e : sub_entities) {
+					for (Entity e : sub_entities) 
+					{
 						graph.addVertex(e);
 					}
 					stmt_compl.close();
 				}
-				else{
+				else
+				{
 					n = new SpecialNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"));
 					System.out.println("created special node "+n.getNodeID());
 				}
 				graph.addVertex(n);
 			}
 			stmt_spe.close();		
-			
+
 			Statement stmt2 = con.createStatement();
 
-			int countRow = 0;
 			String query = "SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='2';";
 			ResultSet rs2 = stmt2.executeQuery(query);
-			while (rs2.next()){
-				countRow = rs2.getRow();
+
+			while (rs2.next())
+			{
 				Set<Node> nodes = new HashSet<Node>();
 				nodes = graph.vertexSet();
 				String nodeAId = rs2.getString("nodeA");
@@ -147,18 +176,22 @@ public class MainTest {
 				}
 			}
 			stmt2.close();
-			
-			
+
+
 			con.close();
 			Driver theDriver=DriverManager.getDriver(dbURL);
 			DriverManager.deregisterDriver(theDriver);
 			System.out.println(edgesCreated + " edges created");
 			CytoscapeWritingTest writingTest = new CytoscapeWritingTest();
 			writingTest.test(graph);
-		} catch (SQLException e) {
+
+		} 
+
+		catch (SQLException e) 
+		{
 			e.printStackTrace();
 		}
-		
+
 	}
 
 }

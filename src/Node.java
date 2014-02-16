@@ -8,7 +8,7 @@ public class Node
 	protected String nodeId;
 	protected String name;
 	protected String type;
-	
+
 
 	public Node(String pId, String entId, String nId, int patId)
 	{
@@ -17,7 +17,7 @@ public class Node
 		nodeId= nId;
 		pathwaydbId=patId;
 	}
-	
+
 	public Node(String pId, String entId, String nId, int patId, String nam, String typ){
 		participantId = pId;
 		entityId=entId;
@@ -138,7 +138,39 @@ public class Node
 	public void setType(String type) {
 		this.type = type;
 	}
-	
-	
-	
+
+	public String attributeForCytoscape(int i)
+	{
+		String result = "";
+		switch (i)
+		{
+		case 0: result = this.participantId;
+		break;
+
+		case 1: result = this.entityId;
+		break;
+		
+		case 2: result = Integer.toString(this.pathwaydbId);
+		break;
+		
+		case 3: result = this.feature;
+		break;
+		
+		case 4: result = this.location;
+		break;
+		
+		case 5: result = this.nodeId;
+		break;
+		
+		case 6: result = this.name;
+		break;
+		
+		case 7: result = this.type;
+		break;
+		}
+		
+		return result;
+		
+	}
+
 }

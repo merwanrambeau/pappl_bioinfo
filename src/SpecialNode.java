@@ -1,4 +1,3 @@
-
 public class SpecialNode extends Node {
 
 	public SpecialNode(String pId, String nId, int patId) {
