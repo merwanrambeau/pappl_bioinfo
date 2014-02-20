@@ -27,12 +27,12 @@ public class MainTest {
 		String dbURL="jdbc:mysql://localhost:3306/hipathdb_reformatted_20100309";
 		try {
 			Connection con=DriverManager.getConnection(dbURL,"root","papplsql");
-			int databaseId = 4;
+			int databaseId = 3;
 			Statement stmt = con.createStatement();
 			
 			
 			//get all the "normal" nodes
-			ResultSet rs = stmt.executeQuery("SELECT reformatted_entity_particpant.participantId, reformatted_entity_particpant.entityId, reformatted_abstract_node.superNodeId, reformatted_entity_particpant.pathwaydbId, reformatted_entity_information.entityType, reformatted_entity_information.entityName "
+			ResultSet rs = stmt.executeQuery("SELECT DISTINCT reformatted_entity_particpant.participantId, reformatted_entity_particpant.entityId, reformatted_abstract_node.superNodeId, reformatted_entity_particpant.pathwaydbId, reformatted_entity_information.entityType, reformatted_entity_information.entityName "
 					+ "FROM reformatted_entity_particpant "
 					+ "JOIN reformatted_abstract_node ON reformatted_abstract_node.participantId=reformatted_entity_particpant.participantId "
 					+ "JOIN reformatted_entity_information ON reformatted_entity_information.entityId = reformatted_entity_particpant.entityId "
@@ -44,9 +44,7 @@ public class MainTest {
 				
 				if(rs.getString("entityType").equals("complex")){
 					n = new ComplexNode(rs.getString("participantId"), rs.getString("entityId"), rs.getString("supernodeId"), rs.getInt("pathwayDbId"),rs.getString("entityName"), rs.getString("entityType"));
-					System.out.println("1. created complex (name) "+n.getName());
-					ArrayList<Entity> sub_entities = ((ComplexNode)n).createSubEntities(con);
-					
+					System.out.println("1. created complex (name) "+n.getName());					
 				}
 				else{
 					n = new Entity(rs.getString("participantId"), rs.getString("entityId"),rs.getString("superNodeId"),rs.getInt("pathwaydbId"), rs.getString("entityName"), rs.getString("entityType"));
@@ -76,7 +74,7 @@ public class MainTest {
 				}
 				//if the node is already in the graph, we don't add it, but for base 4 we add the already existant one to the supernode
 				if(trouve){
-					System.out.println("Node already in the graph : (id) "+n.getEntityId()+" (name) "+n.getName());
+					//System.out.println("Node already in the graph : (id) "+n.getEntityId()+" (name) "+n.getName());
 					if(rs.getInt("pathwaydbId")==4 && rs.getString("superNodeId").startsWith("C")){
 						s.addSubNode(node);
 					}
@@ -109,7 +107,6 @@ public class MainTest {
 					Statement stmt_compl=con.createStatement();
 					String requete = "SELECT * FROM reformatted_entity_information WHERE entityId='"+rs_spe.getString("participantId")+"' AND pathwayDbId='1'";
 					ResultSet rs_compl=stmt_compl.executeQuery(requete);
-					System.out.println(requete);
 					if(rs_compl.next()){
 						n = new ComplexNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"),	rs_compl.getString("entityName"),rs_compl.getString("entityType"));
 					}
@@ -141,7 +138,7 @@ public class MainTest {
 				String nodeAId = rs2.getString("nodeA");
 				String nodeBId = rs2.getString("nodeB");
 				String controllerId = rs2.getString("controller");
-				System.out.println(nodeAId+ " " + nodeBId);
+				//System.out.println(nodeAId+ " " + nodeBId);
 				Node nodeA=new Node();
 				Node nodeB=new Node();
 				Node controller=new Node();
@@ -169,6 +166,20 @@ public class MainTest {
 					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeA);
 					graph.addEdge(controller, nodeA, e);
 					System.out.println("created edge without nodeB");
+				}
+				else if(nodeA.getNodeID()!=null && nodeB.getNodeID()!=null && controller.getNodeID()!=null){ //if there is a nodeA, a nodeB and a controller, since we can't do an edge terminating on another edge we have to create a node
+					PseudoNode n = new PseudoNode(rs2.getString("interactionId"));
+					graph.addVertex(n);
+					//edge from node A to PseudoNode
+					Edge e1 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),nodeA,n);
+					graph.addEdge(nodeA, n, e1);
+					//edge from controller to PseudoNode
+					Edge e2 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,n);
+					graph.addEdge(controller, n, e2);
+					//edge from PseudoNode to nodeB
+					Edge e3 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),n,nodeB);
+					graph.addEdge(n, nodeB, e3);
+					System.out.println("created 3 edges with pseudoNode");
 				}
 				else if (nodeA.getNodeID()!=null && nodeB.getNodeID()!=null){//normal edge from nodeA to nodeB
 					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),nodeA,nodeB);
