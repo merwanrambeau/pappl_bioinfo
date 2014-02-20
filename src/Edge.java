@@ -6,9 +6,11 @@ public class Edge
 	protected String interactionType;
 	protected Node nodeA;
 	protected Node nodeB;
+	protected String cytoscapeName;
 	
 	
-	public Edge(int dbId, String patId, String intId, String interType, Node na, Node nb){
+	public Edge(int dbId, String patId, String intId, String interType, Node na, Node nb)
+	{
 		pathwaydbId=dbId;
 		pathwayId=patId;
 		nodeA=na;
@@ -94,5 +96,32 @@ public class Edge
 		this.nodeB = nodeB;
 	}
 	
-	
+	public String attributeForCytoscape(int i)
+	{
+		String result = "";
+		switch(i)
+		{
+		case 0: result = Integer.toString(this.pathwaydbId);
+		break;
+		
+		case 1: result = this.pathwayId;
+		break;
+		
+		case 2: result = this.interactionId;
+		break;
+		
+		case 3: result = this.interactionType;
+		break;
+		
+		
+		// ici changer les nodeA.name et nodeB.name une fois taxonomies correctes adoptées
+		case 4: result = this.nodeA.name;
+		break;
+		
+		case 5: result = this.nodeB.name;
+		break;
+		}
+		
+		return result;
+	}
 }
