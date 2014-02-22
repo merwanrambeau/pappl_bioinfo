@@ -10,8 +10,11 @@
 
 public class PseudoNode extends Node {
 	
-	public PseudoNode(String id){
+	protected Node controller;
+	
+	public PseudoNode(String id, Node contr){
 		nodeId=id;
+		controller = contr;
 	}
 
 	public PseudoNode() {

@@ -1,6 +1,6 @@
 
-public class SpecialNode extends Node {
-
+public class SpecialNode extends Entity {
+	
 	public SpecialNode(String pId, String nId, int patId) {
 		participantId = pId;
 		nodeId= nId;

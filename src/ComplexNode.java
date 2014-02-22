@@ -6,7 +6,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 
-public class ComplexNode extends Node {
+public class ComplexNode extends Entity {
 	
 	protected ArrayList<Entity> sub_entities=new ArrayList<Entity>();
 

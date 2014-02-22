@@ -27,7 +27,7 @@ public class MainTest {
 		String dbURL="jdbc:mysql://localhost:3306/hipathdb_reformatted_20100309";
 		try {
 			Connection con=DriverManager.getConnection(dbURL,"root","papplsql");
-			int databaseId = 3;
+			int databaseId = 2;
 			Statement stmt = con.createStatement();
 			
 			
@@ -38,10 +38,12 @@ public class MainTest {
 					+ "JOIN reformatted_entity_information ON reformatted_entity_information.entityId = reformatted_entity_particpant.entityId "
 					+ "WHERE reformatted_abstract_node.pathwayDbId='"+databaseId+"' AND reformatted_entity_particpant.pathwaydbId='"+databaseId+"' ORDER BY supernodeId;");
 			DirectedPseudograph<Node,Edge> graph = new DirectedPseudograph<Node,Edge>(Edge.class);
+			SuperNode s=new SuperNode("init");
+			String current_superNodeId="init";
+			int compteur = 0;
+			Entity previous=new Entity();
 			while (rs.next()) {
-				Node n;
-				SuperNode s=new SuperNode(rs.getString("superNodeId")+"false");
-				
+				Entity n;
 				if(rs.getString("entityType").equals("complex")){
 					n = new ComplexNode(rs.getString("participantId"), rs.getString("entityId"), rs.getString("supernodeId"), rs.getInt("pathwayDbId"),rs.getString("entityName"), rs.getString("entityType"));
 					System.out.println("1. created complex (name) "+n.getName());					
@@ -50,36 +52,59 @@ public class MainTest {
 					n = new Entity(rs.getString("participantId"), rs.getString("entityId"),rs.getString("superNodeId"),rs.getInt("pathwaydbId"), rs.getString("entityName"), rs.getString("entityType"));
 					System.out.println("1. created entity (name) "+n.getName());
 				}
-				//special for BDD 4 : we have to manage entity linked to several superNode which appear several times in teh SQL answer
-				if(rs.getInt("pathwaydbId")==4 && rs.getString("superNodeId").startsWith("C")){
-					//if it is a different superNode, create it and store it in s (superNodes do not appear directly as lines in the answer)
-					if(!s.getNodeID().equals(rs.getString("superNodeId"))){
+				//special for supernodes : we have to manage entities linked to 1 or several superNodes 
+				if((rs.getInt("pathwaydbId")!=1 && rs.getString("superNodeId").startsWith("C")) || (rs.getInt("pathwaydbId")==1 && rs.getString("superNodeId").startsWith("E")) || (rs.getInt("pathwaydbId")==1 && rs.getString("superNodeId").startsWith("M"))){
+					//if it is a different superNodeId, reinitialize the counter counting the number of entity with the same sueprNodeId (we need to create a superNode only if there are several entities with the same superNodeId)
+					if(!current_superNodeId.equals(rs.getString("superNodeId"))){
+						compteur = 0;
+						current_superNodeId=rs.getString("superNodeId");
+					}
+					//if this is the second entity with the same superNodeId, we create a superNode and we add them both to this superNode
+					else if(compteur==1){
+						System.out.println("previous nodeId for s : "+s.getNodeID());
+						System.out.println("new supernodeid for s : "+rs.getString("superNodeId"));
 						s = new SuperNode(rs.getString("superNodeId"));
 						graph.addVertex(s);
+						System.out.println("added supernode : "+s.getNodeID());
+						s.addSubNode(n);
+						s.addSubNode(previous);
+						n.addSuperNode(s);
+						previous.addSuperNode(s);
 					}
-
+					//if there is more than 2 entities we just add them to the superNode
+					else if(compteur>1){
+						s.addSubNode(n);
+						n.addSuperNode(s);
+					}
+					//in all cases increment counter
+					compteur++;
 				}
-				//We browse the graph to check if the node is not already in the graph 
+				//We browse the graph to check if the node n is not already in the graph 
 				//(We cannot  use the containsVertex method of the graph because it does not behave as explained in the doc)
 				Set<Node> nodes = new HashSet<Node>();
 				nodes = graph.vertexSet();
 				boolean trouve = false;
 				Iterator<Node> it = nodes.iterator();
 				Node node=new Node();
+				Entity alreadyInGraph = new Entity();
 				while(it.hasNext() && !trouve){
 					node = (Node)it.next();
-					if(node.equals(n)){
-						trouve=true;
+					if(node instanceof Entity){
+						if(((Entity)node).equals(n)){
+							trouve=true;
+							alreadyInGraph = (Entity)node;
+						}
 					}
 				}
-				//if the node is already in the graph, we don't add it, but for base 4 we add the already existant one to the supernode
+				//if the node is already in the graph, we check if the node already in the graph's nodeId 
 				if(trouve){
-					//System.out.println("Node already in the graph : (id) "+n.getEntityId()+" (name) "+n.getName());
-					if(rs.getInt("pathwaydbId")==4 && rs.getString("superNodeId").startsWith("C")){
-						s.addSubNode(node);
+					//if the nodeId is a "supernode-type" nodeId (beginning with C for bases 2 3 and 4, with E or M for base 1) we replace it with the nodeId of the current node n
+					if( (alreadyInGraph.getPathwaydbId()!=1 && alreadyInGraph.getNodeID().startsWith("C")) || (alreadyInGraph.getPathwaydbId()==1 &&  alreadyInGraph.getNodeID().startsWith("M")) || (alreadyInGraph.getPathwaydbId()==1 &&  alreadyInGraph.getNodeID().startsWith("E")) ){
+						alreadyInGraph.setNodeID(n.getNodeID());
+						System.out.println("Node already in graph with a supernode. Changed node ID to "+n.getNodeID());
 					}
 				}
-				//if the node is not in the graph, we add it and its sub entities if it is a complex
+				//if it isn't we add it (and its sub_entities if it's a complex)
 				else{
 					graph.addVertex(n);
 					if(n.getType().equals("complex")){
@@ -89,7 +114,7 @@ public class MainTest {
 						}
 					}
 				}
-				
+				previous = n;
 			}
 			stmt.close();
 			Statement stmt_spe = con.createStatement();
@@ -101,7 +126,7 @@ public class MainTest {
 					+"(SELECT participantId FROM reformatted_entity_particpant WHERE pathwayDbId='"+databaseId+"');");
 
 			while (rs_spe.next()){
-				Node n;
+				Entity n;
 				if(rs_spe.getInt("reformatted_abstract_node.pathwayDbId")==1){
 					//special nodes in DB1 are complex which have information associated to them in the entity_information table
 					Statement stmt_compl=con.createStatement();
@@ -143,17 +168,31 @@ public class MainTest {
 				Node nodeB=new Node();
 				Node controller=new Node();
 				Iterator<Node> it = nodes.iterator();
+				boolean nodeA_supernode=false;
+				boolean nodeB_supernode=false;
+				boolean controller_supernode=false;
 				while(it.hasNext()){
 					Node n = (Node)it.next();
 					if(n.getNodeID()!=null){ //subentities have no nodeid, so we have to check first if there is one nodeId to prevent crash
-						if(n.getNodeID().equals(nodeAId)){
+						if(n.getNodeID().equals(nodeAId) && nodeA_supernode==false){
 							nodeA=n;
+							//if the nodeAId matches with an existent superNode we want the interaction to use the superNode 
+							//and not one of its subnodes which may have the same nodeId
+							if(n instanceof SuperNode){
+								nodeA_supernode=true;
+							}
 						}
-						if(n.getNodeID().equals(nodeBId)){
+						if(n.getNodeID().equals(nodeBId) && nodeB_supernode==false){
 							nodeB=n;
+							if(n instanceof SuperNode){
+								nodeB_supernode=true;
+							}
 						}
-						if(n.getNodeID().equals(controllerId)){
+						if(n.getNodeID().equals(controllerId) && controller_supernode==false){
 							controller=n;
+							if(n instanceof SuperNode){
+								controller_supernode=true;
+							}
 						}
 					}
 				}
@@ -168,17 +207,17 @@ public class MainTest {
 					System.out.println("created edge without nodeB");
 				}
 				else if(nodeA.getNodeID()!=null && nodeB.getNodeID()!=null && controller.getNodeID()!=null){ //if there is a nodeA, a nodeB and a controller, since we can't do an edge terminating on another edge we have to create a node
-					PseudoNode n = new PseudoNode(rs2.getString("interactionId"));
-					graph.addVertex(n);
+					PseudoNode pn = new PseudoNode(rs2.getString("interactionId"),controller);
+					graph.addVertex(pn);
 					//edge from node A to PseudoNode
-					Edge e1 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),nodeA,n);
-					graph.addEdge(nodeA, n, e1);
+					Edge e1 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),nodeA,pn);
+					graph.addEdge(nodeA, pn, e1);
 					//edge from controller to PseudoNode
-					Edge e2 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,n);
-					graph.addEdge(controller, n, e2);
+					Edge e2 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,pn);
+					graph.addEdge(controller, pn, e2);
 					//edge from PseudoNode to nodeB
-					Edge e3 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),n,nodeB);
-					graph.addEdge(n, nodeB, e3);
+					Edge e3 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),pn,nodeB);
+					graph.addEdge(pn, nodeB, e3);
 					System.out.println("created 3 edges with pseudoNode");
 				}
 				else if (nodeA.getNodeID()!=null && nodeB.getNodeID()!=null){//normal edge from nodeA to nodeB
