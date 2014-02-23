@@ -1,7 +1,8 @@
 import java.util.ArrayList;
 
 
-public class Entity extends Node {
+public class Entity extends Node 
+{
 	
 	protected String name;
 	protected String participantId;

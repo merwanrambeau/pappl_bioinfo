@@ -13,40 +13,52 @@ public class MainTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		int edgesCreated = 0;
 		try
 		{
-		Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("com.mysql.jdbc.Driver");
 		}
 		catch
 		(java.lang.ClassNotFoundException e)
 		{
-		System.err.print("ClassNotFoundException:");
-		System.err.println(e.getMessage());
+			System.err.print("ClassNotFoundException:");
+			System.err.println(e.getMessage());
 		}
-		
+
 		String dbURL="jdbc:mysql://localhost:3306/hipathdb_reformatted_20100309";
-		try {
-			Connection con=DriverManager.getConnection(dbURL,"root","papplsql");
-			int databaseId = 2;
+
+		try 
+		{
+			Connection con=DriverManager.getConnection(dbURL,"merwan","Iwasbornthe7");
 			Statement stmt = con.createStatement();
-			
-			
-			//get all the "normal" nodes
-			ResultSet rs = stmt.executeQuery("SELECT DISTINCT reformatted_entity_particpant.participantId, reformatted_entity_particpant.entityId, reformatted_abstract_node.superNodeId, reformatted_entity_particpant.pathwaydbId, reformatted_entity_information.entityType, reformatted_entity_information.entityName "
+
+			///////////////////////////////////////////////////////////////////////////////////////
+			//          get all the "normal" nodes
+			///////////////////////////////////////////////////////////////////////////////////////
+
+			int databaseId = 2;
+			ResultSet rs = stmt.executeQuery("SELECT reformatted_entity_particpant.participantId, reformatted_entity_particpant.entityId, reformatted_abstract_node.superNodeId, reformatted_entity_particpant.pathwaydbId, reformatted_entity_information.entityType, reformatted_entity_information.entityName "
 					+ "FROM reformatted_entity_particpant "
 					+ "JOIN reformatted_abstract_node ON reformatted_abstract_node.participantId=reformatted_entity_particpant.participantId "
 					+ "JOIN reformatted_entity_information ON reformatted_entity_information.entityId = reformatted_entity_particpant.entityId "
 					+ "WHERE reformatted_abstract_node.pathwayDbId='"+databaseId+"' AND reformatted_entity_particpant.pathwaydbId='"+databaseId+"' ORDER BY supernodeId;");
+
+
 			DirectedPseudograph<Node,Edge> graph = new DirectedPseudograph<Node,Edge>(Edge.class);
+
 			SuperNode s=new SuperNode("init");
 			String current_superNodeId="init";
 			int compteur = 0;
 			Entity previous=new Entity();
-			while (rs.next()) {
+
+			while (rs.next()) 
+			{
 				Entity n;
 				if(rs.getString("entityType").equals("complex")){
 					n = new ComplexNode(rs.getString("participantId"), rs.getString("entityId"), rs.getString("supernodeId"), rs.getInt("pathwayDbId"),rs.getString("entityName"), rs.getString("entityType"));
 					System.out.println("1. created complex (name) "+n.getName());					
+
+
 				}
 				else{
 					n = new Entity(rs.getString("participantId"), rs.getString("entityId"),rs.getString("superNodeId"),rs.getInt("pathwaydbId"), rs.getString("entityName"), rs.getString("entityType"));
@@ -81,11 +93,13 @@ public class MainTest {
 				}
 				//We browse the graph to check if the node n is not already in the graph 
 				//(We cannot  use the containsVertex method of the graph because it does not behave as explained in the doc)
+
 				Set<Node> nodes = new HashSet<Node>();
 				nodes = graph.vertexSet();
 				boolean trouve = false;
 				Iterator<Node> it = nodes.iterator();
 				Node node=new Node();
+<<<<<<< HEAD
 				Entity alreadyInGraph = new Entity();
 				while(it.hasNext() && !trouve){
 					node = (Node)it.next();
@@ -106,46 +120,85 @@ public class MainTest {
 				}
 				//if it isn't we add it (and its sub_entities if it's a complex)
 				else{
+=======
+				while(it.hasNext() && !trouve)
+				{
+					node = (Node)it.next();
+
+					if(node.equals(n))
+					{
+						trouve=true;
+					}
+				}
+
+				//if the node is already in the graph, we don't add it, but for base 4 we add the already existant one to the supernode
+
+				if(trouve)
+				{
+					System.out.println("Node already in the graph : (id) "+n.getEntityId()+" (name) "+n.getName());
+					if(rs.getInt("pathwaydbId")==4 && rs.getString("superNodeId").startsWith("C"))
+					{
+						s.addSubNode(node);
+					}
+				}
+				//if the node is not in the graph, we add it and its sub entities if it is a complex
+
+				else
+				{
 					graph.addVertex(n);
-					if(n.getType().equals("complex")){
+					if(n.getType().equals("complex"))
+					{
 						ArrayList<Entity> sub_entities = ((ComplexNode)n).getSub_entities();
-						for (Entity e : sub_entities) {
+						for (Entity e : sub_entities) 
+						{
 							graph.addVertex(e);
 						}
 					}
 				}
 				previous = n;
+
 			}
-			stmt.close();
+
+			stmt.close(); 
+
+			///////////////////////////////////////////////////////////////////////////////////////
+			//          get all special nodes (which do not appear in the "entity_particpant" table)
+			///////////////////////////////////////////////////////////////////////////////////////
+
 			Statement stmt_spe = con.createStatement();
 			ResultSet rs_spe;
-			//get all special nodes (which do not appear in the "entity_particpant" table)
 			rs_spe = stmt_spe.executeQuery("SELECT * FROM reformatted_abstract_node"
 					+" WHERE reformatted_abstract_node.pathwayDbId='"+databaseId+"' "
 					+"AND reformatted_abstract_node.participantId NOT IN "
 					+"(SELECT participantId FROM reformatted_entity_particpant WHERE pathwayDbId='"+databaseId+"');");
 
+
 			while (rs_spe.next()){
 				Entity n;
 				if(rs_spe.getInt("reformatted_abstract_node.pathwayDbId")==1){
 					//special nodes in DB1 are complex which have information associated to them in the entity_information table
+
 					Statement stmt_compl=con.createStatement();
 					String requete = "SELECT * FROM reformatted_entity_information WHERE entityId='"+rs_spe.getString("participantId")+"' AND pathwayDbId='1'";
 					ResultSet rs_compl=stmt_compl.executeQuery(requete);
+
 					if(rs_compl.next()){
 						n = new ComplexNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"),	rs_compl.getString("entityName"),rs_compl.getString("entityType"));
 					}
-					else{
+					else
+					{
 						n = new ComplexNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"));
 					}
 					System.out.println("created complex(name) "+n.getName());
 					ArrayList<Entity> sub_entities = ((ComplexNode)n).createSubEntities(con);
-					for (Entity e : sub_entities) {
+					for (Entity e : sub_entities) 
+					{
 						graph.addVertex(e);
 					}
 					stmt_compl.close();
 				}
-				else{
+				else
+				{
 					n = new SpecialNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"));
 					n.setName(rs_spe.getString("participantId"));
 					System.out.println("created special node (name) "+n.getName());
@@ -153,11 +206,14 @@ public class MainTest {
 				graph.addVertex(n);
 			}
 			stmt_spe.close();		
-			
+
 			Statement stmt2 = con.createStatement();
+
 			String query = "SELECT * FROM reformatted_pathway_relationPair WHERE pathwayDbId='"+databaseId+"';";
 			ResultSet rs2 = stmt2.executeQuery(query);
-			while (rs2.next()){
+
+			while (rs2.next())
+			{
 				Set<Node> nodes = new HashSet<Node>();
 				nodes = graph.vertexSet();
 				String nodeAId = rs2.getString("nodeA");
@@ -188,6 +244,7 @@ public class MainTest {
 								nodeB_supernode=true;
 							}
 						}
+
 						if(n.getNodeID().equals(controllerId) && controller_supernode==false){
 							controller=n;
 							if(n instanceof SuperNode){
@@ -196,15 +253,21 @@ public class MainTest {
 						}
 					}
 				}
-				if(nodeA.getNodeID()==null && nodeB.getNodeID()!=null && controller.getNodeID()!=null){ //if there is no nodeA, the edge comes from controller to nodeB
+				if(nodeA.getNodeID()==null && nodeB.getNodeID()!=null && controller.getNodeID()!=null)
+				{ 
+					//if there is no nodeA, the edge comes from controller to nodeB
 					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeB);
 					graph.addEdge(controller, nodeB, e);
 					System.out.println("created edge without nodeA");
+					edgesCreated++;
 				}
-				else if(nodeB.getNodeID()==null && nodeA.getNodeID()!=null && controller.getNodeID()!=null){ //if there is no nodeB but a nodeA and a controller, edge from controller to nodeA
+				else if(nodeB.getNodeID()==null && nodeA.getNodeID()!=null && controller.getNodeID()!=null)
+				{ 
+					//if there is no nodeB but a nodeA and a controller, edge from controller to nodeA
 					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeA);
 					graph.addEdge(controller, nodeA, e);
 					System.out.println("created edge without nodeB");
+					edgesCreated++;
 				}
 				else if(nodeA.getNodeID()!=null && nodeB.getNodeID()!=null && controller.getNodeID()!=null){ //if there is a nodeA, a nodeB and a controller, since we can't do an edge terminating on another edge we have to create a node
 					PseudoNode pn = new PseudoNode(rs2.getString("interactionId"),controller);
@@ -224,22 +287,33 @@ public class MainTest {
 					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),nodeA,nodeB);
 					graph.addEdge(nodeA, nodeB, e);
 					System.out.println("created normal edge");
+					edgesCreated++;
 				}
-				else{
+				else
+				{
 					System.out.println("created NO EDGE");
 					System.out.println("controller : "+controllerId);
 				}
 			}
 			stmt2.close();
-			
-			
+
+
 			con.close();
 			Driver theDriver=DriverManager.getDriver(dbURL);
 			DriverManager.deregisterDriver(theDriver);
-		} catch (SQLException e) {
+			System.out.println(edgesCreated + " edges created");
+			CytoscapeWriting writingTest = new CytoscapeWriting();
+			writingTest.writeNodes(graph);
+			writingTest.writeEdges(graph);
+			writingTest.writeLinks(graph);
+
+		} 
+
+		catch (SQLException e) 
+		{
 			e.printStackTrace();
 		}
-		
+
 	}
 
 }
