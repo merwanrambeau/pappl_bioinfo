@@ -37,7 +37,7 @@ public class MainTest {
 			///////////////////////////////////////////////////////////////////////////////////////
 
 			int databaseId = 2;
-			ResultSet rs = stmt.executeQuery("SELECT reformatted_entity_particpant.participantId, reformatted_entity_particpant.entityId, reformatted_abstract_node.superNodeId, reformatted_entity_particpant.pathwaydbId, reformatted_entity_information.entityType, reformatted_entity_information.entityName "
+			ResultSet rs = stmt.executeQuery("SELECT reformatted_entity_particpant.*, reformatted_abstract_node.superNodeId, reformatted_entity_particpant.pathwaydbId, reformatted_entity_information.entityType, reformatted_entity_information.entityName "
 					+ "FROM reformatted_entity_particpant "
 					+ "JOIN reformatted_abstract_node ON reformatted_abstract_node.participantId=reformatted_entity_particpant.participantId "
 					+ "JOIN reformatted_entity_information ON reformatted_entity_information.entityId = reformatted_entity_particpant.entityId "
@@ -64,6 +64,9 @@ public class MainTest {
 					n = new Entity(rs.getString("participantId"), rs.getString("entityId"),rs.getString("superNodeId"),rs.getInt("pathwaydbId"), rs.getString("entityName"), rs.getString("entityType"));
 					System.out.println("1. created entity (name) "+n.getName());
 				}
+				n.setFeature(rs.getString("feature"));
+				n.setLocation(rs.getString("location"));
+				
 				//special for supernodes : we have to manage entities linked to 1 or several superNodes 
 				if((rs.getInt("pathwaydbId")!=1 && rs.getString("superNodeId").startsWith("C")) || (rs.getInt("pathwaydbId")==1 && rs.getString("superNodeId").startsWith("E")) || (rs.getInt("pathwaydbId")==1 && rs.getString("superNodeId").startsWith("M"))){
 					//if it is a different superNodeId, reinitialize the counter counting the number of entity with the same sueprNodeId (we need to create a superNode only if there are several entities with the same superNodeId)
@@ -104,7 +107,7 @@ public class MainTest {
 				while(it.hasNext() && !trouve){
 					node = (Node)it.next();
 					if(node instanceof Entity){
-						if(((Entity)node).equals(n)){
+						if(((Entity)node).similar(n)){
 							trouve=true;
 							alreadyInGraph = (Entity)node;
 						}

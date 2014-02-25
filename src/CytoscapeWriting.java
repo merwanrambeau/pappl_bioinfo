@@ -134,9 +134,10 @@ public class CytoscapeWriting {
 					if (node.attributeForCytoscape(i) != null)
 					{
 						writer.write("\n"+ node.cytoscapeName + " = "+ node.attributeForCytoscape(i));
-						i++;
+						
 						System.out.println("writing node : " + node.getCytoscapeName());
 					}
+					i++;
 				}
 			}
 
