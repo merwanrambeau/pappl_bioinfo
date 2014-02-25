@@ -17,7 +17,7 @@ public class CytoscapeWriting {
 	{
 	}
 
-	public void writeNodes(DirectedPseudograph graph)
+	public void writeNodes(DirectedPseudograph<Node, Edge> graph)
 	{
 		//Creating all .NA files, from all the attributes of the nodes
 
@@ -116,7 +116,7 @@ public class CytoscapeWriting {
 
 			for (Node node : allNodes)
 			{
-				String tempName = node.name;
+				String tempName = node.getName();
 				if (!cytoscapeNames.containsKey(tempName))
 				{
 					node.cytoscapeName = tempName;
@@ -145,13 +145,11 @@ public class CytoscapeWriting {
 		}
 		catch (Exception e)
 		{
-
+			e.printStackTrace();
 		}
-
-		int stop = 0;
 	}
 
-	public void writeEdges(DirectedPseudograph graph)
+	public void writeEdges(DirectedPseudograph<Node,Edge> graph)
 	{
 		try
 		{
@@ -259,7 +257,7 @@ public class CytoscapeWriting {
 		}
 	}
 
-	public void writeLinks(DirectedPseudograph graph)
+	public void writeLinks(DirectedPseudograph<Node, Edge> graph)
 	{
 		try
 		{
@@ -277,6 +275,7 @@ public class CytoscapeWriting {
 					linksBw.write("\n" +  edge.nodeA.cytoscapeName + " " +  edge.cytoscapeName + " " + edge.nodeB.cytoscapeName);
 				}
 			}
+			linksBw.close();
 		}
 		catch (Exception e)
 		{

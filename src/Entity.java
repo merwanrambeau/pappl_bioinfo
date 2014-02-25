@@ -4,7 +4,6 @@ import java.util.ArrayList;
 public class Entity extends Node 
 {
 	
-	protected String name;
 	protected String participantId;
 	protected String entityId;
 	protected String feature;
@@ -43,6 +42,41 @@ public class Entity extends Node
 		name=nam;
 		type=typ;
 	}
+	
+	public String attributeForCytoscape(int i)
+	{
+		String result = "";
+		switch (i)
+		{
+		case 0: result = this.participantId;
+		break;
+
+		case 1: result = this.entityId;
+		break;
+		
+		case 2: result = Integer.toString(this.pathwaydbId);
+		break;
+		
+		case 3: result = this.feature;
+		break;
+		
+		case 4: result = this.location;
+		break;
+		
+		case 5: result = this.nodeId;
+		break;
+		
+		case 6: result = this.name;
+		break;
+		
+		case 7: result = this.type;
+		break;
+		}
+		
+		return result;
+		
+	}
+
 
 	/**
 	 * @return the complex
@@ -58,19 +92,7 @@ public class Entity extends Node
 		this.complex = complex;
 	}
 	
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
+	
 
 	/**
 	 * @return the participantId

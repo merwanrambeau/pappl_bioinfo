@@ -29,7 +29,7 @@ public class MainTest {
 
 		try 
 		{
-			Connection con=DriverManager.getConnection(dbURL,"merwan","Iwasbornthe7");
+			Connection con=DriverManager.getConnection(dbURL,"root","papplsql");
 			Statement stmt = con.createStatement();
 
 			///////////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +99,7 @@ public class MainTest {
 				boolean trouve = false;
 				Iterator<Node> it = nodes.iterator();
 				Node node=new Node();
-<<<<<<< HEAD
+
 				Entity alreadyInGraph = new Entity();
 				while(it.hasNext() && !trouve){
 					node = (Node)it.next();
@@ -119,30 +119,6 @@ public class MainTest {
 					}
 				}
 				//if it isn't we add it (and its sub_entities if it's a complex)
-				else{
-=======
-				while(it.hasNext() && !trouve)
-				{
-					node = (Node)it.next();
-
-					if(node.equals(n))
-					{
-						trouve=true;
-					}
-				}
-
-				//if the node is already in the graph, we don't add it, but for base 4 we add the already existant one to the supernode
-
-				if(trouve)
-				{
-					System.out.println("Node already in the graph : (id) "+n.getEntityId()+" (name) "+n.getName());
-					if(rs.getInt("pathwaydbId")==4 && rs.getString("superNodeId").startsWith("C"))
-					{
-						s.addSubNode(node);
-					}
-				}
-				//if the node is not in the graph, we add it and its sub entities if it is a complex
-
 				else
 				{
 					graph.addVertex(n);

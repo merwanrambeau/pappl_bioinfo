@@ -3,7 +3,7 @@ public class Node {
 	protected int pathwaydbId;
 	
 	protected String nodeId;
-	
+	protected String name;
 	protected String type;
 	protected String cytoscapeName;
 
@@ -67,25 +67,39 @@ public class Node {
 	{
 		this.cytoscapeName = inputCytoscapeName;
 	}
+	
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public String attributeForCytoscape(int i)
 	{
 		String result = "";
 		switch (i)
 		{
-		case 0: result = this.participantId;
+		case 0: result = null;
 		break;
 
-		case 1: result = this.entityId;
+		case 1: result = null;
 		break;
 		
 		case 2: result = Integer.toString(this.pathwaydbId);
 		break;
 		
-		case 3: result = this.feature;
+		case 3: result = null;
 		break;
 		
-		case 4: result = this.location;
+		case 4: result = null;
 		break;
 		
 		case 5: result = this.nodeId;
