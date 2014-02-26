@@ -56,13 +56,13 @@ public class MainTest {
 				Entity n;
 				if(rs.getString("entityType").equals("complex")){
 					n = new ComplexNode(rs.getString("participantId"), rs.getString("entityId"), rs.getString("supernodeId"), rs.getInt("pathwayDbId"),rs.getString("entityName"), rs.getString("entityType"));
-					System.out.println("1. created complex (name) "+n.getName());					
+					//System.out.println("1. created complex (name) "+n.getName());					
 
 
 				}
 				else{
 					n = new Entity(rs.getString("participantId"), rs.getString("entityId"),rs.getString("superNodeId"),rs.getInt("pathwaydbId"), rs.getString("entityName"), rs.getString("entityType"));
-					System.out.println("1. created entity (name) "+n.getName());
+					//System.out.println("1. created entity (name) "+n.getName());
 				}
 				n.setFeature(rs.getString("feature"));
 				n.setLocation(rs.getString("location"));
@@ -76,11 +76,11 @@ public class MainTest {
 					}
 					//if this is the second entity with the same superNodeId, we create a superNode and we add them both to this superNode
 					else if(compteur==1){
-						System.out.println("previous nodeId for s : "+s.getNodeID());
-						System.out.println("new supernodeid for s : "+rs.getString("superNodeId"));
+						//System.out.println("previous nodeId for s : "+s.getNodeID());
+						//System.out.println("new supernodeid for s : "+rs.getString("superNodeId"));
 						s = new SuperNode(rs.getString("superNodeId"));
 						graph.addVertex(s);
-						System.out.println("added supernode : "+s.getNodeID());
+						//System.out.println("added supernode : "+s.getNodeID());
 						s.addSubNode(n);
 						s.addSubNode(previous);
 						n.addSuperNode(s);
@@ -118,7 +118,7 @@ public class MainTest {
 					//if the nodeId is a "supernode-type" nodeId (beginning with C for bases 2 3 and 4, with E or M for base 1) we replace it with the nodeId of the current node n
 					if( (alreadyInGraph.getPathwaydbId()!=1 && alreadyInGraph.getNodeID().startsWith("C")) || (alreadyInGraph.getPathwaydbId()==1 &&  alreadyInGraph.getNodeID().startsWith("M")) || (alreadyInGraph.getPathwaydbId()==1 &&  alreadyInGraph.getNodeID().startsWith("E")) ){
 						alreadyInGraph.setNodeID(n.getNodeID());
-						System.out.println("Node already in graph with a supernode. Changed node ID to "+n.getNodeID());
+						//System.out.println("Node already in graph with a supernode. Changed node ID to "+n.getNodeID());
 					}
 				}
 				//if it isn't we add it (and its sub_entities if it's a complex)
@@ -168,7 +168,7 @@ public class MainTest {
 					{
 						n = new ComplexNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"));
 					}
-					System.out.println("created complex(name) "+n.getName());
+					//System.out.println("created complex(name) "+n.getName());
 					ArrayList<Entity> sub_entities = ((ComplexNode)n).createSubEntities(con);
 					for (Entity e : sub_entities) 
 					{
@@ -180,7 +180,7 @@ public class MainTest {
 				{
 					n = new SpecialNode(rs_spe.getString("participantId"), rs_spe.getString("supernodeId"), rs_spe.getInt("reformatted_abstract_node.pathwayDbId"));
 					n.setName(rs_spe.getString("participantId"));
-					System.out.println("created special node (name) "+n.getName());
+					//System.out.println("created special node (name) "+n.getName());
 				}
 				graph.addVertex(n);
 			}
@@ -235,43 +235,43 @@ public class MainTest {
 				if(nodeA.getNodeID()==null && nodeB.getNodeID()!=null && controller.getNodeID()!=null)
 				{ 
 					//if there is no nodeA, the edge comes from controller to nodeB
-					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeB);
+					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),rs2.getString("controlType"),controller,nodeB);
 					graph.addEdge(controller, nodeB, e);
-					System.out.println("created edge without nodeA");
+					//System.out.println("created edge without nodeA");
 					edgesCreated++;
 				}
 				else if(nodeB.getNodeID()==null && nodeA.getNodeID()!=null && controller.getNodeID()!=null)
 				{ 
 					//if there is no nodeB but a nodeA and a controller, edge from controller to nodeA
-					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,nodeA);
+					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),rs2.getString("controlType"),controller,nodeA);
 					graph.addEdge(controller, nodeA, e);
-					System.out.println("created edge without nodeB");
+					//System.out.println("created edge without nodeB");
 					edgesCreated++;
 				}
 				else if(nodeA.getNodeID()!=null && nodeB.getNodeID()!=null && controller.getNodeID()!=null){ //if there is a nodeA, a nodeB and a controller, since we can't do an edge terminating on another edge we have to create a node
-					PseudoNode pn = new PseudoNode(rs2.getString("interactionId"),controller);
+					PseudoNode pn = new PseudoNode(rs2.getString("interactionId"),controller, nodeA, nodeB);
 					graph.addVertex(pn);
 					//edge from node A to PseudoNode
-					Edge e1 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),nodeA,pn);
+					Edge e1 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),rs2.getString("controlType"),nodeA,pn);
 					graph.addEdge(nodeA, pn, e1);
 					//edge from controller to PseudoNode
-					Edge e2 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),controller,pn);
+					Edge e2 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),rs2.getString("controlType"),controller,pn);
 					graph.addEdge(controller, pn, e2);
 					//edge from PseudoNode to nodeB
-					Edge e3 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),pn,nodeB);
+					Edge e3 = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),rs2.getString("controlType"),pn,nodeB);
 					graph.addEdge(pn, nodeB, e3);
-					System.out.println("created 3 edges with pseudoNode");
+					//System.out.println("created 3 edges with pseudoNode");
 				}
 				else if (nodeA.getNodeID()!=null && nodeB.getNodeID()!=null){//normal edge from nodeA to nodeB
-					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),nodeA,nodeB);
+					Edge e = new Edge(rs2.getInt("pathwayDbId"), rs2.getString("pathwayId"), rs2.getString("interactionId"),rs2.getString("interactionType"),rs2.getString("controlType"),nodeA,nodeB);
 					graph.addEdge(nodeA, nodeB, e);
-					System.out.println("created normal edge");
+					//System.out.println("created normal edge");
 					edgesCreated++;
 				}
 				else
 				{
-					System.out.println("created NO EDGE");
-					System.out.println("controller : "+controllerId);
+					//System.out.println("created NO EDGE");
+					//System.out.println("controller : "+controllerId);
 				}
 			}
 			stmt2.close();
@@ -285,6 +285,9 @@ public class MainTest {
 			writingTest.writeNodes(graph);
 			writingTest.writeEdges(graph);
 			writingTest.writeLinks(graph);
+			
+			PHWriting ph = new PHWriting();
+			ph.findTransformations(graph);
 
 		} 
 

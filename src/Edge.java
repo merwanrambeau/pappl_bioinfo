@@ -4,12 +4,13 @@ public class Edge
 	protected String pathwayId;
 	protected String interactionId;
 	protected String interactionType;
+	protected String controlType;
 	protected Node nodeA;
 	protected Node nodeB;
 	protected String cytoscapeName;
 	
 	
-	public Edge(int dbId, String patId, String intId, String interType, Node na, Node nb)
+	public Edge(int dbId, String patId, String intId, String interType, String control, Node na, Node nb)
 	{
 		pathwaydbId=dbId;
 		pathwayId=patId;
@@ -17,6 +18,7 @@ public class Edge
 		nodeB=nb;
 		interactionId=intId;
 		interactionType=interType;
+		controlType = control;
 	}
 	
 	/**
@@ -96,6 +98,22 @@ public class Edge
 		this.nodeB = nodeB;
 	}
 	
+	
+	
+	/**
+	 * @return the controlType
+	 */
+	public String getControlType() {
+		return controlType;
+	}
+
+	/**
+	 * @param controlType the controlType to set
+	 */
+	public void setControlType(String controlType) {
+		this.controlType = controlType;
+	}
+
 	public String attributeForCytoscape(int i)
 	{
 		String result = "";

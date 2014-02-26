@@ -169,66 +169,45 @@ public class Entity extends Node
 	}
 
 	/*
-	 * We need to redefine equals to prevent from creating several times
-	 * the same node when entity belong to several SuperNodes
+	 * We use this function to know if we have to add an entity in the graph
+	 * 2 entities are considered similar if they have the same entityId, pathwayDbId, location and feature
 	 */
-	public boolean equals(Object obj) {
+	public boolean similar(Entity obj) {
         if (obj==this) {
             return true;
         }
- 
-        
-        if (obj instanceof Entity) {
-            Entity other = (Entity) obj;
+         
+        else {
+            Entity other = obj;
             
-            // 2 nodes are considered the same if they have the same entityId, pathwayDbId, location and feature
-            // (if both have an attribute "null", they are considered identical on this attribute)
-            
-            //comparing entity_id
-            boolean this_null = (this.entityId==null);
-            boolean other_null = (other.entityId==null);
-            if((this_null && !other_null) || (!this_null && other_null)){
+            if(this.pathwaydbId != other.pathwaydbId){
             	return false;
             }
-            else if(!this_null && !other_null){
-            	if(!this.entityId.equals(other.entityId)){
-                	return false;
-                }
-            }
-            
-            //comparing location
-            this_null=(this.location ==null);
-            other_null = (other.location==null);
-            if((this_null && !other_null) || (!this_null && other_null)){
+
+            if (entityId == null) {
+            	if (other.entityId != null)
+            		return false;
+            } else if (!entityId.equals(other.entityId))
             	return false;
-            }
-            else if(!this_null && !other_null){
-            	if(!this.location.equals(other.location)){
-                	return false;
-                }
-            }
             
-            //comparing feature
-            this_null=(this.feature ==null);
-            other_null = (other.feature==null);
-            if((this_null && !other_null) || (!this_null && other_null)){
+            if (feature == null) {
+            	if (other.feature != null)
+            		return false;
+            } else if (!feature.equals(other.feature))
             	return false;
-            }
-            else if(!this_null && !other_null){
-            	if (!this.feature.equals(other.feature)){
-                	return false;
-                }
-            }
             
-            //comparing pathwayDbId
-            else if(this.pathwaydbId != other.pathwaydbId)
-            {
+            
+            if (location == null) {
+            	if (other.location != null)
+            		return false;
+            } else if (!location.equals(other.location))
             	return false;
-            }
+            
+            
             
             return true;
         }
-        return false;
 	}
+
 	
 }

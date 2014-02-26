@@ -12,10 +12,15 @@ public class PseudoNode extends Node {
 	
 	private static int instanceCount = 0;
 	protected Node controller;
+	protected Node nodeA;
+	protected Node nodeB;
 	
-	public PseudoNode(String id, Node contr){
+	
+	public PseudoNode(String id, Node contr, Node nA, Node nB){
 		nodeId=id;
 		controller = contr;
+		nodeA=nA;
+		nodeB=nB;
 		instanceCount ++;
 		name = "PseudoNode_"+instanceCount;
 	}
@@ -25,6 +30,50 @@ public class PseudoNode extends Node {
 		name = "PseudoNode_"+instanceCount;
 	}
 	
+	
+	
+	/**
+	 * @return the controller
+	 */
+	public Node getController() {
+		return controller;
+	}
+
+	/**
+	 * @param controller the controller to set
+	 */
+	public void setController(Node controller) {
+		this.controller = controller;
+	}
+
+	/**
+	 * @return the nodeA
+	 */
+	public Node getNodeA() {
+		return nodeA;
+	}
+
+	/**
+	 * @param nodeA the nodeA to set
+	 */
+	public void setNodeA(Node nodeA) {
+		this.nodeA = nodeA;
+	}
+
+	/**
+	 * @return the nodeB
+	 */
+	public Node getNodeB() {
+		return nodeB;
+	}
+
+	/**
+	 * @param nodeB the nodeB to set
+	 */
+	public void setNodeB(Node nodeB) {
+		this.nodeB = nodeB;
+	}
+
 	public String attributeForCytoscape(int i)
 	{
 		String result = "";
