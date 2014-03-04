@@ -20,8 +20,8 @@ public class ComplexNode extends Entity {
 		pathwaydbId=patId;
 	}
 
-	public ComplexNode(String pId, String entId, String nId, int patId,	String nam, String typ) {
-		super(pId, entId, nId, patId, nam, typ);
+	public ComplexNode(String pId, String entId, String nId, int patId, String nam, String typ) {
+		super(pId, entId, nId, patId,nam, typ);
 	}
 	
 	public ComplexNode(String pId, String nId, int patId,	String nam, String typ) {
@@ -78,6 +78,7 @@ public class ComplexNode extends Entity {
 					if(r.next()){
 					n.setType(r.getString("entityType"));
 					n.setName(r.getString("entityName"));
+					n.setPathways(this.getPathways());
 					}
 					sub_entities.add(n);
 					System.out.println("sub_entity(name) "+n.getName()+" added.");
@@ -96,6 +97,7 @@ public class ComplexNode extends Entity {
 					n.setName(rs.getString("entityName"));
 					n.setLocation(rs.getString("location"));
 					n.setFeature(rs.getString("feature"));
+					n.setPathways(this.getPathways());
 					sub_entities.add(n);
 					System.out.println("DB4 sub_entity "+n.getEntityId()+" added.");
 				}

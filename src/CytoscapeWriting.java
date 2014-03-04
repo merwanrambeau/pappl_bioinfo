@@ -117,6 +117,7 @@ public class CytoscapeWriting {
 			for (Node node : allNodes)
 			{
 				String tempName = node.getName();
+				
 				if (!cytoscapeNames.containsKey(tempName))
 				{
 					node.cytoscapeName = tempName;
@@ -134,7 +135,7 @@ public class CytoscapeWriting {
 					if (node.attributeForCytoscape(i) != null)
 					{
 						writer.write("\n"+ node.cytoscapeName + " = "+ node.attributeForCytoscape(i));
-						
+						writer.flush();
 						System.out.println("writing node : " + node.getCytoscapeName());
 					}
 					i++;
@@ -244,6 +245,7 @@ public class CytoscapeWriting {
 					if (edge.attributeForCytoscape(i) != null)
 					{
 						writer.write("\n"+ edge.interactionId + " = "+ edge.attributeForCytoscape(i));
+						writer.flush();
 						i++;
 					}
 				}
@@ -274,6 +276,7 @@ public class CytoscapeWriting {
 				if (edge.nodeA != null && edge.nodeB != null)
 				{
 					linksBw.write("\n" +  edge.nodeA.cytoscapeName + " " +  edge.cytoscapeName + " " + edge.nodeB.cytoscapeName);
+					linksBw.flush();
 				}
 			}
 			linksBw.close();

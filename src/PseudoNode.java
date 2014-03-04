@@ -16,8 +16,9 @@ public class PseudoNode extends Node {
 	protected Node nodeB;
 	
 	
-	public PseudoNode(String id, Node contr, Node nA, Node nB){
+	public PseudoNode(String id, int patid,Node contr, Node nA, Node nB){
 		nodeId=id;
+		pathwaydbId= patid;
 		controller = contr;
 		nodeA=nA;
 		nodeB=nB;

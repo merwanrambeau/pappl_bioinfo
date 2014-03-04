@@ -1,6 +1,11 @@
+import java.util.HashSet;
+
+
+
 public class Node {
 	
 	protected int pathwaydbId;
+	protected HashSet<String> pathways = new HashSet<String>();
 	
 	protected String nodeId;
 	protected String name;
@@ -43,6 +48,36 @@ public class Node {
 	public void setPathwaydbId(int pathwaydbId) {
 		this.pathwaydbId = pathwaydbId;
 	}
+	
+	
+
+
+	/**
+	 * @return the pathways
+	 */
+	public HashSet<String> getPathways() {
+		return pathways;
+	}
+
+	/**
+	 * @param pathways the pathways to set
+	 */
+	public void setPathways(HashSet<String> pathways) {
+		this.pathways = pathways;
+	}
+	
+	/**
+	 * @param pathway the pathway to add to the list
+	 */
+	public void addPathway(String pathway){
+		pathways.add(pathway);
+	}
+	
+	public void addSeveralPathways(HashSet<String> pathways){
+		pathways.addAll(pathways);
+	}
+
+
 
 
 	/**

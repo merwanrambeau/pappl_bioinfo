@@ -12,8 +12,9 @@ public class SuperNode extends Node{
 		name = "SuperNode_"+instanceCount;
 	}
 	
-	public SuperNode(String supernodeId){
+	public SuperNode(String supernodeId, int patid){
 		nodeId=supernodeId;
+		pathwaydbId=patid;
 		type="SuperNode";
 		name = "SuperNode_"+instanceCount;
 	}
