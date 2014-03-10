@@ -1,6 +1,7 @@
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -13,6 +14,9 @@ public class MainTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+
+		//DirectedPseudograph<Node, Edge> graph2 = Util.deserializeGraph("test.ser");
+
 		int edgesCreated = 0;
 		try
 		{
@@ -202,7 +206,7 @@ public class MainTest {
 					if(n.getNodeID()!=null)
 					{ 
 						//subentities have no nodeid, so we have to check first if there is one nodeId to prevent crash
-						
+
 						if(n.getNodeID().equals(nodeAId))
 						{
 							nodeA=n;
@@ -255,17 +259,29 @@ public class MainTest {
 			DriverManager.deregisterDriver(theDriver);
 			System.out.println(edgesCreated + " edges created");
 			CytoscapeWriting writingTest = new CytoscapeWriting();
+			
+			// *** debug code
+			
+			// ****
+
+			
+			
 			writingTest.writeNodes(graph);
 			writingTest.writeEdges(graph);
 			writingTest.writeLinks(graph);
 
-		} 
+			SerializableGraph sg = new SerializableGraph(graph);
+			sg.serialize("test");
+
+		}
 
 		catch (SQLException e) 
 		{
 			e.printStackTrace();
 		}
 
+
 	}
+
 
 }

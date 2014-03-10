@@ -1,4 +1,4 @@
-public class Edge 
+public class Edge implements java.io.Serializable
 {
 	protected int pathwaydbId;
 	protected String pathwayId;

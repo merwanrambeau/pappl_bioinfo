@@ -1,4 +1,4 @@
-public class Node 
+public class Node implements java.io.Serializable
 {
 	protected String participantId;
 	protected String entityId;
