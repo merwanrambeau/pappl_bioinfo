@@ -17,7 +17,7 @@ public class CytoscapeWriting {
 	{
 	}
 
-	public Boolean writeNodes(DirectedPseudograph graph)
+	public void writeNodes(DirectedPseudograph<Node, Edge> graph)
 	{
 		//Creating all .NA files, from all the attributes of the nodes
 
@@ -118,7 +118,8 @@ public class CytoscapeWriting {
 
 			for (Node node : allNodes)
 			{
-				String tempName = node.name;
+				String tempName = node.getName();
+
 				if (!cytoscapeNames.containsKey(tempName))
 				{
 					node.cytoscapeName = tempName;
@@ -138,9 +139,10 @@ public class CytoscapeWriting {
 					if (node.attributeForCytoscape(i) != null)
 					{
 						writer.write("\n"+ node.cytoscapeName + " = "+ node.attributeForCytoscape(i));
-						i++;
+						writer.flush();
 						System.out.println("writing node : " + node.getCytoscapeName());
 					}
+					i++;
 				}
 			}
 
@@ -149,16 +151,12 @@ public class CytoscapeWriting {
 		}
 		catch (Exception e)
 		{
-
+			e.printStackTrace();
 		}
-		
-		
-		
 
-		return true;
 	}
 
-	public void writeEdges(DirectedPseudograph graph)
+	public void writeEdges(DirectedPseudograph<Node,Edge> graph)
 	{
 		try
 		{
@@ -252,6 +250,7 @@ public class CytoscapeWriting {
 					if (edge.attributeForCytoscape(i) != null)
 					{
 						writer.write("\n"+ edge.interactionId + " = "+ edge.attributeForCytoscape(i));
+						writer.flush();
 						i++;
 					}
 				}
@@ -266,7 +265,7 @@ public class CytoscapeWriting {
 		}
 	}
 
-	public void writeLinks(DirectedPseudograph graph)
+	public void writeLinks(DirectedPseudograph<Node, Edge> graph)
 	{
 		try
 		{
@@ -282,8 +281,10 @@ public class CytoscapeWriting {
 				if (edge.nodeA != null && edge.nodeB != null)
 				{
 					linksBw.write("\n" +  edge.nodeA.cytoscapeName + " " +  edge.cytoscapeName + " " + edge.nodeB.cytoscapeName);
+					linksBw.flush();
 				}
 			}
+			linksBw.close();
 		}
 		catch (Exception e)
 		{
@@ -291,5 +292,5 @@ public class CytoscapeWriting {
 		}
 	}
 
-	
+
 }

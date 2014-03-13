@@ -6,7 +6,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 
-public class ComplexNode extends Node {
+public class ComplexNode extends Entity {
 	
 	protected ArrayList<Entity> sub_entities=new ArrayList<Entity>();
 
@@ -20,8 +20,8 @@ public class ComplexNode extends Node {
 		pathwaydbId=patId;
 	}
 
-	public ComplexNode(String pId, String entId, String nId, int patId,	String nam, String typ) {
-		super(pId, entId, nId, patId, nam, typ);
+	public ComplexNode(String pId, String entId, String nId, int patId, String nam, String typ) {
+		super(pId, entId, nId, patId,nam, typ);
 	}
 	
 	public ComplexNode(String pId, String nId, int patId,	String nam, String typ) {
@@ -78,6 +78,7 @@ public class ComplexNode extends Node {
 					if(r.next()){
 					n.setType(r.getString("entityType"));
 					n.setName(r.getString("entityName"));
+					n.setPathways(this.getPathways());
 					}
 					sub_entities.add(n);
 					System.out.println("sub_entity(name) "+n.getName()+" added.");
@@ -96,6 +97,7 @@ public class ComplexNode extends Node {
 					n.setName(rs.getString("entityName"));
 					n.setLocation(rs.getString("location"));
 					n.setFeature(rs.getString("feature"));
+					n.setPathways(this.getPathways());
 					sub_entities.add(n);
 					System.out.println("DB4 sub_entity "+n.getEntityId()+" added.");
 				}
